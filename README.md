@@ -11,8 +11,15 @@ This Packer setup depends on AWS credentials having been pre-configured. Before 
 ```
 packer build elk.json
 ```
+## Deploy using Terraform
+
+```
+terraform plan -var-file=<?> -out proposed.plan
+terraform apply proposed.plan
+```
 
 # Resources
 
 + https://github.com/docker-library/elasticsearch
 + https://hub.docker.com/r/dtagdevsec/elk/~/dockerfile/
++ https://www.digitalocean.com/community/tutorials/how-to-install-elasticsearch-logstash-and-kibana-elk-stack-on-ubuntu-16-04
