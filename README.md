@@ -1,5 +1,7 @@
 # Image-ELK
 
+![ELK](elk.jpg)
+
 Setup Elastic and Kibana using Packer and Terraform.
 
 ## Build the AMI using Packer
