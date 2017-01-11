@@ -11,7 +11,3 @@ This Packer setup depends on AWS credentials having been pre-configured. Before 
 ```
 packer build elk.json
 ```
-
-# Credits
-
-Largely derived from https://github.com/PageUpPeopleOrg/packer-elasticsearch
