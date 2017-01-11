@@ -1,0 +1,17 @@
+{
+    "variables": {
+    },
+    "builders": [{
+        "type": "amazon-ebs",
+        "region": "eu-west-1",
+        "source_ami": "ami-0d77397e",
+        "instance_type": "t2.medium",
+        "ssh_username": "ubuntu",
+        "ami_name": "elk-{{user `elastic_version`}}-{{timestamp}}"
+    }],
+    "provisioners": [{
+        "type": "shell",
+        "script": "scripts/install-java.sh",
+        "execute_command": "echo 'packer' | sudo -S sh -c '{{ .Path }}'"
+    }]
+}
