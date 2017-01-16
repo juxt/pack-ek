@@ -60,6 +60,7 @@ resource "aws_instance" "elk" {
   provisioner "remote-exec" {
     inline = [
       "sudo systemctl start elasticsearch",
+      "sudo docker run -d -p 9100:9100 mobz/elasticsearch-head:5",
     ]
   }
 }
