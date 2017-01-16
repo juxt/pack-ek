@@ -57,6 +57,18 @@ resource "aws_instance" "elk" {
     private_key = "${file("${var.key_path}")}"
   }
 
+  provisioner "file" {
+    source      = "${var.config_file}"
+    destination = "/tmp/elasticsearch.yml"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo mv /tmp/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml",
+      "sudo chown -R root:ubuntu /etc/elasticsearch/elasticsearch.yml"
+    ]
+  }
+
   provisioner "remote-exec" {
     inline = [
       "sudo systemctl start elasticsearch",
