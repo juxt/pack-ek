@@ -16,6 +16,8 @@ variable "elk_key_name" {}
 
 variable "elk_key_path" {}
 
+variable "elk_private_ip" {}
+
 # Providers -----------------------------
 
 provider "aws" {
@@ -32,4 +34,5 @@ module "elk" {
   key_name           = "${var.elk_key_name}"
   key_path           = "${var.elk_key_path}"
   ami_image_id       = "${var.elk_ami}"
+  private_id         = "${var.private_ip}"
 }
