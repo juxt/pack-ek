@@ -27,6 +27,14 @@
         },
         {
             "type": "shell",
+            "script": "scripts/install-docker.sh"
+        },
+        {
+            "type": "shell",
+            "script": "scripts/install-es-head.sh"
+        },
+        {
+            "type": "shell",
             "script": "scripts/install-kibana.sh",
             "environment_vars": [
                 "KIBANA_VERSION={{user `kibana_version`}}"
