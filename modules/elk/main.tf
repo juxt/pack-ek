@@ -15,7 +15,7 @@ resource "aws_security_group" "elk" {
 
   ingress {
     from_port   = 9100
-    to_port     = 9200
+    to_port     = 9100
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
