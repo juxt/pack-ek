@@ -43,4 +43,15 @@ resource "aws_instance" "elk" {
     Name = "${var.system_name}-elk"
     Type = "ELK"
   }
+
+  connection {
+    user        = "ubuntu"
+    private_key = "${file("${var.key_path}")}"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo systemctl start elasticsearch",
+    ]
+  }
 }

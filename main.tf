@@ -14,6 +14,8 @@ variable "elk_ami" {}
 
 variable "elk_key_name" {}
 
+variable "elk_key_path" {}
+
 # Providers -----------------------------
 
 provider "aws" {
@@ -28,5 +30,6 @@ module "elk" {
   availability_zones = ["${var.availability_zone}"]
   system_name        = "${var.system_name}"
   key_name           = "${var.elk_key_name}"
+  key_path           = "${var.elk_key_path}"
   ami_image_id       = "${var.elk_ami}"
 }
