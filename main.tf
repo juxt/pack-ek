@@ -34,5 +34,5 @@ module "elk" {
   key_name           = "${var.elk_key_name}"
   key_path           = "${var.elk_key_path}"
   ami_image_id       = "${var.elk_ami}"
-  private_id         = "${var.private_ip}"
+  private_ip         = "${var.elk_private_ip}"
 }

@@ -1,6 +1,6 @@
 resource "aws_security_group" "elk" {
   name        = "${var.system_name}_elk"
-  description = "Allow access to Datomic Transactor"
+  description = "Allow access to ELK Stack"
 
   ingress {
     from_port   = 22
@@ -11,6 +11,13 @@ resource "aws_security_group" "elk" {
     # ideally
 
     # cidr_blocks = ["10.0.0.0/14"]
+  }
+
+  ingress {
+    from_port   = 9100
+    to_port     = 9200
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
