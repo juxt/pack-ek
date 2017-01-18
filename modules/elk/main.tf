@@ -64,6 +64,17 @@ resource "aws_instance" "elk" {
     private_key = "${file("${var.key_path}")}"
   }
 
+  # Mount the persistent EBS volume and set permissions
+  provisioner "remote-exec" {
+    inline = [
+      "sudo mkfs -t ext4 ${var.volume_name}",
+      "sudo mkdir -p ${var.elasticsearch_data_dir}",
+      "sudo mount ${var.volume_name} ${var.elasticsearch_data_dir}",
+      "sudo echo \"${var.volume_name} ${var.elasticsearch_data_dir} ext4 defaults,nofail 0 2\" >> /etc/fstab",
+      "sudo chown -R elasticsearch. ${var.elasticsearch_data_dir}"
+    ]
+  }
+
   provisioner "file" {
     source      = "${var.config_file}"
     destination = "/tmp/elasticsearch.yml"
@@ -73,7 +84,6 @@ resource "aws_instance" "elk" {
     inline = [
       "sudo mv /tmp/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml",
       "sudo chown -R root:ubuntu /etc/elasticsearch/elasticsearch.yml",
-      "sudo chown -R elasticsearch. /usr/share/elasticsearch"
     ]
   }
 

@@ -29,3 +29,7 @@ variable "volume_size" {
 variable "volume_encryption" {
     default = "false"
 }
+
+variable "elasticsearch_data_dir" {
+  default = "/opt/elasticsearch/data"
+}
