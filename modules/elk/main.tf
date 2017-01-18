@@ -52,6 +52,13 @@ resource "aws_instance" "elk" {
     Type = "ELK"
   }
 
+  ebs_block_device {
+    device_name = "${var.volume_name}"
+    volume_size = "${var.volume_size}"
+    encrypted   = "${var.volume_encryption}"
+    delete_on_termination = false
+  }
+
   connection {
     user        = "ubuntu"
     private_key = "${file("${var.key_path}")}"
@@ -65,7 +72,8 @@ resource "aws_instance" "elk" {
   provisioner "remote-exec" {
     inline = [
       "sudo mv /tmp/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml",
-      "sudo chown -R root:ubuntu /etc/elasticsearch/elasticsearch.yml"
+      "sudo chown -R root:ubuntu /etc/elasticsearch/elasticsearch.yml",
+      "sudo chown -R elasticsearch. /usr/share/elasticsearch"
     ]
   }
 

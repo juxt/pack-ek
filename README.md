@@ -23,3 +23,4 @@ terraform apply proposed.plan
 + https://github.com/docker-library/elasticsearch
 + https://hub.docker.com/r/dtagdevsec/elk/~/dockerfile/
 + https://www.digitalocean.com/community/tutorials/how-to-install-elasticsearch-logstash-and-kibana-elk-stack-on-ubuntu-16-04
++ https://github.com/nadnerb/terraform-elasticsearch

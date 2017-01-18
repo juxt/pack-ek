@@ -17,3 +17,15 @@ variable "key_path" {}
 variable "private_ip" {}
 
 variable "config_file" {}
+
+variable "volume_name" {
+  default = "/dev/sdh"
+}
+
+variable "volume_size" {
+  default = "50"
+}
+
+variable "volume_encryption" {
+    default = "false"
+}
