@@ -40,5 +40,10 @@
                 "KIBANA_VERSION={{user `kibana_version`}}"
             ],
             "execute_command": "echo 'packer' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'"
+        },
+        {
+            "type": "shell",
+            "script": "scripts/install-nginx.sh",
+            "execute_command": "echo 'packer' | sudo -S sh -c '{{ .Path }}'"
         }]
 }
