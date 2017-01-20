@@ -7,15 +7,11 @@ resource "aws_security_group" "elk" {
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-
-    # ideally
-
-    # cidr_blocks = ["10.0.0.0/14"]
   }
 
   ingress {
-    from_port   = 9100
-    to_port     = 9100
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -24,14 +20,7 @@ resource "aws_security_group" "elk" {
     from_port   = 9200
     to_port     = 9200
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 9300
-    to_port     = 9300
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["${var.cidr}"]
   }
 
   tags {
@@ -102,4 +91,13 @@ resource "aws_instance" "elk" {
       "sudo systemctl start kibana"
     ]
   }
+}
+
+resource "aws_eip" "default" {
+  vpc = true
+}
+
+resource "aws_eip_association" "eip_assoc" {
+  instance_id = "${aws_instance.elk.id}"
+  allocation_id = "${aws_eip.default.id}"
 }

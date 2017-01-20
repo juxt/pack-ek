@@ -4,6 +4,8 @@ variable "aws_profile" {}
 
 variable "aws_region" {}
 
+variable "cidr" {}
+
 variable "availability_zone" {}
 
 variable "system_name" {
@@ -25,6 +27,12 @@ provider "aws" {
   region  = "${var.aws_region}"
 }
 
+# Outputs -----------------------------
+
+output "ip" {
+    value = "${module.elk.ip}"
+}
+
 # Modules -----------------------------
 
 module "elk" {
@@ -35,4 +43,5 @@ module "elk" {
   key_path           = "${var.elk_key_path}"
   ami_image_id       = "${var.elk_ami}"
   private_ip         = "${var.elk_private_ip}"
+  cidr               = "${var.cidr}"
 }

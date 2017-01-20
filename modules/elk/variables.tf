@@ -4,6 +4,8 @@ variable "availability_zones" {
   type = "list"
 }
 
+variable "cidr" {}
+
 variable "ami_image_id" {}
 
 variable "instance_type" {
