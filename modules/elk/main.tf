@@ -83,14 +83,23 @@ resource "aws_instance" "elk" {
   provisioner "remote-exec" {
     inline = [
       "sudo mv /tmp/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml",
-      "sudo chown -R root:ubuntu /etc/elasticsearch/elasticsearch.yml",
+      "sudo chown -R root:root /etc/elasticsearch/elasticsearch.yml",
+      "sudo systemctl start elasticsearch",
+      "sudo docker run -d -p 9100:9100 mobz/elasticsearch-head:5"
     ]
+  }
+
+  provisioner "file" {
+    source      = "${var.config_file}"
+    destination = "/tmp/kibana.yml"
   }
 
   provisioner "remote-exec" {
     inline = [
-      "sudo systemctl start elasticsearch",
-      "sudo docker run -d -p 9100:9100 mobz/elasticsearch-head:5",
+      "sudo mv /tmp/kibana.yml /etc/kibana/kibana.yml",
+      "sudo chown -R root:root /etc/kibana/kibana.yml",
+      "sudo systemctl enable kibana",
+      "sudo systemctl start kibana"
     ]
   }
 }
