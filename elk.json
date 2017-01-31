@@ -31,6 +31,10 @@
         },
         {
             "type": "shell",
+            "script": "scripts/install-aws.sh"
+        },
+        {
+            "type": "shell",
             "script": "scripts/install-es-head.sh"
         },
         {

@@ -2,7 +2,9 @@
 
 ![ELK](elk.jpg)
 
-Setup Elastic and Kibana using Packer and Terraform.
+Elasticsearch, Kibana and es-head in a box, protected by NGINX!
+
+Setup of Elastic, Kibana and head plugin using Packer and Terraform.
 
 ## Build the AMI using Packer
 
@@ -17,6 +19,8 @@ packer build elk.json
 terraform plan -var-file=<?> -out proposed.plan
 terraform apply proposed.plan
 ```
+
+You will need `htpasswd` to run.
 
 # Resources
 

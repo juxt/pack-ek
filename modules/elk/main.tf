@@ -23,8 +23,104 @@ resource "aws_security_group" "elk" {
     cidr_blocks = ["${var.cidr}"]
   }
 
+  egress {
+    from_port   = 0
+    to_port     = 64000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   tags {
     Name = "${var.system_name}_elk"
+  }
+}
+
+resource "aws_iam_role" "elk" {
+  name = "${var.system_name}-elk-role"
+  assume_role_policy = <<EOF
+{
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      },
+      "Sid": ""
+    }
+  ],
+  "Version": "2012-10-17"
+}
+EOF
+}
+
+resource "aws_iam_instance_profile" "elk" {
+  name = "${var.system_name}-elk"
+  roles = ["${aws_iam_role.elk.name}"]
+}
+
+# policy with complete access to the dynamodb table
+resource "aws_iam_role_policy" "elk" {
+  name = "volume_access"
+  role = "${aws_iam_role.elk.id}"
+
+  policy = <<EOF
+{
+ "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ec2:AttachVolume",
+                "ec2:DetachVolume"
+            ],
+            "Resource": "arn:aws:ec2:eu-west-1:${var.aws_account_id}:volume/${aws_ebs_volume.es-data.id}"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ec2:AttachVolume",
+                "ec2:DetachVolume"
+            ],
+            "Resource": "arn:aws:ec2:eu-west-1:${var.aws_account_id}:instance/*"
+        }
+    ]
+}
+EOF
+}
+
+data "template_file" "es_config" {
+  template = "${file("${path.module}/files/elasticsearch.yml")}"
+
+  vars {
+    cluster_name = "${var.es_cluster_name}",
+    data_dir = "${var.elasticsearch_data_dir}"
+  }
+}
+
+data "template_file" "kibana_config" {
+  template = "${file("${path.module}/files/kibana.yml")}"
+
+  vars {
+    es_basic_username  = "${var.es_basic_username}",
+    es_basic_password  = "${var.es_basic_password}",
+  }
+}
+
+resource "aws_ebs_volume" "es-data" {
+  availability_zone = "${var.availability_zones[0]}"
+  size = "${var.volume_size}"
+  encrypted   = "${var.volume_encryption}"
+}
+
+data "template_file" "mount_ebs" {
+  template = "${file("${path.module}/files/mount-ebs.sh")}"
+
+  vars {
+    availability_zone = "eu-west-1"
+    volume_id = "${aws_ebs_volume.es-data.id}"
+    device_name = "${var.device_name}"
+    lsblk_name = "${var.lsblk_name}"
+    elasticsearch_data_dir = "${var.elasticsearch_data_dir}"
   }
 }
 
@@ -35,17 +131,11 @@ resource "aws_instance" "elk" {
   vpc_security_group_ids = ["${aws_security_group.elk.id}"]
   key_name               = "${var.key_name}"
   private_ip             = "${var.private_ip}"
+  iam_instance_profile   = "${aws_iam_instance_profile.elk.name}"
 
   tags {
     Name = "${var.system_name}-elk"
     Type = "ELK"
-  }
-
-  ebs_block_device {
-    device_name = "${var.volume_name}"
-    volume_size = "${var.volume_size}"
-    encrypted   = "${var.volume_encryption}"
-    delete_on_termination = false
   }
 
   connection {
@@ -53,33 +143,32 @@ resource "aws_instance" "elk" {
     private_key = "${file("${var.key_path}")}"
   }
 
-  # Mount the persistent EBS volume and set permissions
-  provisioner "remote-exec" {
-    inline = [
-      "sudo mkfs -t ext4 ${var.volume_name}",
-      "sudo mkdir -p ${var.elasticsearch_data_dir}",
-      "sudo mount ${var.volume_name} ${var.elasticsearch_data_dir}",
-      "sudo echo \"${var.volume_name} ${var.elasticsearch_data_dir} ext4 defaults,nofail 0 2\" >> /etc/fstab",
-      "sudo chown -R elasticsearch. ${var.elasticsearch_data_dir}"
-    ]
+  # Setup Elastic Search ----------------------------------------------
+
+  provisioner "file" {
+    content = "${data.template_file.mount_ebs.rendered}"
+    destination = "/tmp/mount-es.sh"
   }
 
   provisioner "file" {
-    source      = "${var.config_file}"
+    content     = "${data.template_file.es_config.rendered}"
     destination = "/tmp/elasticsearch.yml"
   }
 
   provisioner "remote-exec" {
     inline = [
+      "sudo chmod +x /tmp/mount-es.sh",
+      "sudo /tmp/mount-es.sh",
       "sudo mv /tmp/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml",
       "sudo chown -R root:root /etc/elasticsearch/elasticsearch.yml",
       "sudo systemctl start elasticsearch",
-      "sudo docker run -d -p 9100:9100 mobz/elasticsearch-head:5"
     ]
   }
 
+  # Setup Kibana ----------------------------------------------
+
   provisioner "file" {
-    source      = "${var.config_file}"
+    content     = "${data.template_file.kibana_config.rendered}"
     destination = "/tmp/kibana.yml"
   }
 
@@ -89,6 +178,41 @@ resource "aws_instance" "elk" {
       "sudo chown -R root:root /etc/kibana/kibana.yml",
       "sudo systemctl enable kibana",
       "sudo systemctl start kibana"
+    ]
+  }
+
+  # Setup ES Head ----------------------------------------------
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo docker run -d -p 9100:9100 mobz/elasticsearch-head:5"
+    ]
+  }
+
+  # Setup nginx ----------------------------------------------
+
+  provisioner "file" {
+    source      = "${path.module}/files/nginx.conf"
+    destination = "/tmp/nginx.conf"
+  }
+
+  provisioner "local-exec" {
+    command = "htpasswd -b -c /tmp/.htpasswd ${var.es_basic_username} ${var.es_basic_password}"
+  }
+
+  provisioner "file" {
+    source      = "/tmp/.htpasswd"
+    destination = "/tmp/.htpasswd"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo mv /tmp/nginx.conf /etc/nginx/nginx.conf",
+      "sudo chown -R root:root /etc/nginx/nginx.conf",
+      "sudo mv /tmp/.htpasswd /etc/nginx/.htpasswd",
+      "sudo chown -R root:root /etc/nginx/.htpasswd",
+      "sudo systemctl enable nginx.service",
+      "sudo systemctl restart nginx.service"
     ]
   }
 }
