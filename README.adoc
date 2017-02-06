@@ -1,6 +1,6 @@
-= Pack-ELK
+= Pack-EK
 
-![ELK](elk.jpg)
+image:elk.jpg
 
 Elasticsearch, Kibana and es-head in a box, protected by NGINX!
 
@@ -51,9 +51,9 @@ terraform apply proposed.plan
 
 You will need `htpasswd`.
 
-# Resources
+== Resources
 
-+ https://github.com/docker-library/elasticsearch
-+ https://hub.docker.com/r/dtagdevsec/elk/~/dockerfile/
-+ https://www.digitalocean.com/community/tutorials/how-to-install-elasticsearch-logstash-and-kibana-elk-stack-on-ubuntu-16-04
-+ https://github.com/nadnerb/terraform-elasticsearch
+https://github.com/docker-library/elasticsearch
+https://hub.docker.com/r/dtagdevsec/elk/~/dockerfile/
+https://www.digitalocean.com/community/tutorials/how-to-install-elasticsearch-logstash-and-kibana-elk-stack-on-ubuntu-16-04
+https://github.com/nadnerb/terraform-elasticsearch
