@@ -1,0 +1,59 @@
+= Pack-ELK
+
+![ELK](elk.jpg)
+
+Elasticsearch, Kibana and es-head in a box, protected by NGINX!
+
+Setup of Elastic, Kibana and head plugin using Packer and Terraform.
+
+== Build the AMI using Packer
+
+This Packer setup depends on AWS credentials having been pre-configured. Before running, set the `AWS_PROFILE` environmental variable.
+
+```
+packer build elk.json
+```
+
+== Deploy using Terraform
+
+See the `sample.tf` for a straightforward Terraform configuration to use the modules. Terraform also has a https://www.terraform.io/intro/[getting started guide].
+
+One option is to clone this repository into a working subdirectory of your project to start using it. You could also refer to the module directly from Git:
+
+....
+module "ek" {
+  source = "github.com/juxt/pack-ek//modules/ek?ref=0.1.0"
+  # Declare variable inputs
+  # ...
+}
+....
+
+To use this module you need to provide the relevant variables that are declared at the top of `sample.tf`, you can do so either from the command line or from a tf.vars file. Assuming you went ahead and supplied the variables in a `dev.tfvars` file, then the Terraform commands to plan and to subsequently execute
+provisioning would be:
+
+Get the module ready:
+
+....
+terraform get
+....
+
+Make the Terraform plan
+
+....
+terraform plan -var-file=dev.tfvars -out proposed.plan
+....
+
+Execute the plan:
+
+....
+terraform apply proposed.plan
+....
+
+You will need `htpasswd`.
+
+# Resources
+
++ https://github.com/docker-library/elasticsearch
++ https://hub.docker.com/r/dtagdevsec/elk/~/dockerfile/
++ https://www.digitalocean.com/community/tutorials/how-to-install-elasticsearch-logstash-and-kibana-elk-stack-on-ubuntu-16-04
++ https://github.com/nadnerb/terraform-elasticsearch
