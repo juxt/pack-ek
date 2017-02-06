@@ -1,6 +1,6 @@
 = Pack-EK
 
-image:elk.jpg
+image:elk.jpg[]
 
 Elasticsearch, Kibana and es-head in a box, protected by NGINX!
 
