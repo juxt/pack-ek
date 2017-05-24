@@ -110,6 +110,7 @@ resource "aws_ebs_volume" "es-data" {
   availability_zone = "${var.availability_zones[0]}"
   size = "${var.volume_size}"
   encrypted   = "${var.volume_encryption}"
+  type = "${var.volume_type}"
 }
 
 data "template_file" "mount_ebs" {
